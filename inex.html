@@ -1,1 +1,688 @@
 
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏪 شلوغی لحظه‌ای - نانوایی و تاکسی</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        #searchInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: 'Vazirmatn', sans-serif;
+            transition: border-color 0.3s;
+        }
+        
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-family: 'Vazirmatn', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            animation: fadeIn 0.6s ease-in;
+        }
+        
+        .location-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .location-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .location-header {
+            margin-bottom: 15px;
+        }
+        
+        .location-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .location-address {
+            font-size: 0.85em;
+            color: #999;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .status-empty {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-moderate {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .status-busy {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .busyness-info {
+            margin: 15px 0;
+        }
+        
+        .busyness-bar {
+            height: 25px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .busyness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ffc107, #f44336);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8em;
+            font-weight: 600;
+            transition: width 0.5s ease;
+        }
+        
+        .time-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+        
+        .time-box {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .time-box-label {
+            color: #999;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        
+        .time-box-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: 20px;
+        }
+        
+        .type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .type-bakery {
+            background: #ffd8b8;
+            color: #d84315;
+        }
+        
+        .type-taxi {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+        
+        .stats-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+            
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🏪 شلوغی لحظه‌ای</h1>
+            <p>بهترین وقت برای خریدهای خود را پیدا کنید</p>
+        </header>
+        
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="totalLocations">150</div>
+                <div class="stat-label">مکان فعال</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="averageBusyness">62%</div>
+                <div class="stat-label">میانگین شلوغی</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="lastUpdate">ابھی</div>
+                <div class="stat-label">آخرین بروزرسانی</div>
+            </div>
+        </div>
+        
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="نام نانوایی یا ایستگاه تاکسی را جستجو کنید..."
+                    autocomplete="off"
+                >
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterByType('all')">همه</button>
+                <button class="filter-btn" onclick="filterByType('bakery')">🥐 نانوایی</button>
+                <button class="filter-btn" onclick="filterByType('taxi')">🚕 تاکسی</button>
+            </div>
+        </div>
+        
+        <!-- Results Container -->
+        <div class="results-container" id="resultsContainer">
+            <!-- Results will be loaded here -->
+        </div>
+    </div>
+    
+    <script>
+        // Mock Data - داده‌های نمونه
+        const mockLocations = [
+            {
+                id: "bakery_001",
+                name: "نانوایی فلسفی",
+                type: "bakery",
+                address: "تهران - خیابان شریف",
+                coordinates: { lat: 35.7865, lng: 51.4215 },
+                currentScore: 78,
+                busynessByHour: {
+                    0: 5, 1: 3, 2: 2, 3: 1, 4: 2, 5: 10,
+                    6: 45, 7: 75, 8: 90, 9: 85, 10: 72,
+                    11: 65, 12: 70, 13: 60, 14: 50, 15: 55,
+                    16: 60, 17: 75, 18: 68, 19: 45, 20: 35,
+                    21: 25, 22: 15, 23: 8
+                }
+            },
+            {
+                id: "bakery_002",
+                name: "نانوایی سرو",
+                type: "bakery",
+                address: "تهران - خیابان تجریش",
+                currentScore: 45,
+                busynessByHour: {
+                    0: 3, 1: 2, 2: 1, 3: 1, 4: 2, 5: 8,
+                    6: 30, 7: 55, 8: 65, 9: 60, 10: 50,
+                    11: 45, 12: 55, 13: 50, 14: 40, 15: 42,
+                    16: 48, 17: 60, 18: 55, 19: 35, 20: 25,
+                    21: 18, 22: 12, 23: 5
+                }
+            },
+            {
+                id: "bakery_003",
+                name: "نانوایی احسان",
+                type: "bakery",
+                address: "تهران - خیابان جردن",
+                currentScore: 62,
+                busynessByHour: {
+                    0: 4, 1: 3, 2: 2, 3: 2, 4: 3, 5: 12,
+                    6: 40, 7: 70, 8: 80, 9: 75, 10: 65,
+                    11: 60, 12: 65, 13: 55, 14: 48, 15: 52,
+                    16: 58, 17: 70, 18: 62, 19: 40, 20: 30,
+                    21: 20, 22: 14, 23: 6
+                }
+            },
+            {
+                id: "taxi_001",
+                name: "ایستگاه تاکسی مرکز",
+                type: "taxi",
+                address: "میدان انقلاب",
+                currentScore: 85,
+                busynessByHour: {
+                    0: 40, 1: 30, 2: 20, 3: 15, 4: 20, 5: 35,
+                    6: 65, 7: 95, 8: 98, 9: 90, 10: 80,
+                    11: 75, 12: 85, 13: 90, 14: 85, 15: 80,
+                    16: 88, 17: 95, 18: 92, 19: 75, 20: 65,
+                    21: 55, 22: 45, 23: 35
+                }
+            },
+            {
+                id: "taxi_002",
+                name: "ایستگاه تاکسی پارک",
+                type: "taxi",
+                address: "پارک لاله",
+                currentScore: 52,
+                busynessByHour: {
+                    0: 25, 1: 20, 2: 15, 3: 12, 4: 15, 5: 25,
+                    6: 45, 7: 70, 8: 75, 9: 68, 10: 60,
+                    11: 55, 12: 65, 13: 68, 14: 62, 15: 58,
+                    16: 65, 17: 75, 18: 70, 19: 55, 20: 45,
+                    21: 38, 22: 32, 23: 25
+                }
+            },
+            {
+                id: "bakery_004",
+                name: "نانوایی قصری",
+                type: "bakery",
+                address: "تهران - خیابان ولیعصر",
+                currentScore: 35,
+                busynessByHour: {
+                    0: 2, 1: 1, 2: 1, 3: 1, 4: 2, 5: 8,
+                    6: 25, 7: 45, 8: 55, 9: 50, 10: 42,
+                    11: 38, 12: 48, 13: 45, 14: 35, 15: 32,
+                    16: 40, 17: 52, 18: 48, 19: 30, 20: 22,
+                    21: 15, 22: 10, 23: 4
+                }
+            },
+            {
+                id: "taxi_003",
+                name: "ایستگاه تاکسی شریف",
+                type: "taxi",
+                address: "خیابان شریف",
+                currentScore: 70,
+                busynessByHour: {
+                    0: 35, 1: 28, 2: 18, 3: 14, 4: 18, 5: 32,
+                    6: 58, 7: 88, 8: 92, 9: 85, 10: 75,
+                    11: 70, 12: 80, 13: 85, 14: 78, 15: 72,
+                    16: 82, 17: 90, 18: 85, 19: 65, 20: 55,
+                    21: 48, 22: 40, 23: 30
+                }
+            },
+            {
+                id: "bakery_005",
+                name: "نانوایی رهی",
+                type: "bakery",
+                address: "تهران - میدان آزادی",
+                currentScore: 58,
+                busynessByHour: {
+                    0: 3, 1: 2, 2: 2, 3: 1, 4: 2, 5: 9,
+                    6: 35, 7: 65, 8: 75, 9: 70, 10: 58,
+                    11: 52, 12: 62, 13: 58, 14: 48, 15: 50,
+                    16: 55, 17: 68, 18: 60, 19: 40, 20: 28,
+                    21: 18, 22: 12, 23: 5
+                }
+            }
+        ];
+        
+        let filteredLocations = [...mockLocations];
+        let currentFilter = 'all';
+        
+        // Get current hour
+        function getCurrentHour() {
+            return new Date().getHours();
+        }
+        
+        // Get status based on score
+        function getStatus(score) {
+            if (score < 40) return { text: '✅ خالی', class: 'status-empty' };
+            if (score < 70) return { text: '⚠️ متوسط', class: 'status-moderate' };
+            return { text: '⛔ شلوغ', class: 'status-busy' };
+        }
+        
+        // Get best and worst hours
+        function getBestAndWorstHours(busynessByHour) {
+            const hours = Object.entries(busynessByHour);
+            const best = hours.reduce((min, h) => h[1] < min[1] ? h : min);
+            const worst = hours.reduce((max, h) => h[1] > max[1] ? h : max);
+            return { best: parseInt(best[0]), worst: parseInt(worst[0]) };
+        }
+        
+        // Create location card
+        function createLocationCard(location) {
+            const currentHour = getCurrentHour();
+            const currentScore = location.busynessByHour[currentHour];
+            const status = getStatus(currentScore);
+            const { best, worst } = getBestAndWorstHours(location.busynessByHour);
+            const typeLabel = location.type === 'bakery' ? '🥐 نانوایی' : '🚕 تاکسی';
+            
+            const card = document.createElement('div');
+            card.className = 'location-card';
+            
+            card.innerHTML = `
+                <div class="location-header">
+                    <div class="location-name">
+                        ${location.name}
+                        <span class="type-badge ${location.type === 'bakery' ? 'type-bakery' : 'type-taxi'}">
+                            ${typeLabel}
+                        </span>
+                    </div>
+                    <div class="location-address">📍 ${location.address}</div>
+                </div>
+                
+                <div class="status-badge ${status.class}">
+                    ${status.text}
+                </div>
+                
+                <div class="busyness-info">
+                    <div style="font-weight: 600; margin-bottom: 5px;">میزان شلوغی</div>
+                    <div class="busyness-bar">
+                        <div class="busyness-fill" style="width: ${currentScore}%">
+                            ${currentScore}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="time-info">
+                    <div class="time-box">
+                        <div class="time-box-label">بهترین وقت</div>
+                        <div class="time-box-value">${best}:00</div>
+                    </div>
+                    <div class="time-box">
+                        <div class="time-box-label">شلوغ‌ترین وقت</div>
+                        <div class="time-box-value">${worst}:00</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="chart-${location.id}"></canvas>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Draw chart for location
+        function drawChart(location) {
+            const canvas = document.getElementById(`chart-${location.id}`);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const hours = Array.from({length: 24}, (_, i) => i);
+            const busyness = hours.map(h => location.busynessByHour[h]);
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours.map(h => `${h}:00`),
+                    datasets: [{
+                        label: 'میزان شلوغی',
+                        data: busyness,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { font: { family: "'Vazirmatn', sans-serif" } }
+                        },
+                        x: {
+                            ticks: { font: { family: "'Vazirmatn', sans-serif" } }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Filter by type
+        function filterByType(type) {
+            currentFilter = type;
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (type === 'all') {
+                filteredLocations = [...mockLocations];
+            } else {
+                filteredLocations = mockLocations.filter(loc => loc.type === type);
+            }
+            
+            renderResults();
+        }
+        
+        // Search functionality
+        function searchLocations(query) {
+            if (!query) {
+                if (currentFilter === 'all') {
+                    filteredLocations = [...mockLocations];
+                } else {
+                    filteredLocations = mockLocations.filter(loc => loc.type === currentFilter);
+                }
+            } else {
+                filteredLocations = mockLocations.filter(loc => {
+                    const matchQuery = loc.name.includes(query) || loc.address.includes(query);
+                    const matchType = currentFilter === 'all' || loc.type === currentFilter;
+                    return matchQuery && matchType;
+                });
+            }
+            
+            renderResults();
+        }
+        
+        // Render results
+        function renderResults() {
+            const container = document.getElementById('resultsContainer');
+            
+            if (filteredLocations.length === 0) {
+                container.innerHTML = '<div class="no-results">نتیجه‌ای یافت نشد</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            filteredLocations.forEach(location => {
+                const card = createLocationCard(location);
+                container.appendChild(card);
+                
+                // Draw chart after a short delay to ensure canvas is rendered
+                setTimeout(() => drawChart(location), 100);
+            });
+            
+            // Update stats
+            updateStats();
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalLocations = document.getElementById('totalLocations');
+            const averageBusyness = document.getElementById('averageBusyness');
+            
+            const currentHour = getCurrentHour();
+            const avgScore = Math.round(
+                filteredLocations.reduce((sum, loc) => sum + loc.busynessByHour[currentHour], 0) / 
+                filteredLocations.length
+            );
+            
+            totalLocations.textContent = filteredLocations.length;
+            averageBusyness.textContent = avgScore + '%';
+        }
+        
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchLocations(e.target.value);
+        });
+        
+        // Initial render
+        window.addEventListener('load', () => {
+            renderResults();
+            
+            // Update every minute
+            setInterval(() => {
+                renderResults();
+            }, 60000);
+        });
+    </script>
+</body>
+</html>
